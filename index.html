@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kviz – Rendgensko zračenje u industriji</title>
+    <style>
+        :root {
+            --dark: #1e2a38;
+            --light: #f5f7fb;
+            --accent: #f6be4f;
+            --accent-soft: rgba(246, 190, 79, 0.15);
+            --error: #d9534f;
+            --success: #34a853;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top, #3c4f6a, #0c1117);
+            color: var(--dark);
+        }
+
+        .app {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 24px;
+            padding: 24px 24px 28px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #6a7687;
+        }
+
+        .badge {
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: var(--accent-soft);
+            color: #8a671e;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            position: relative;
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: #dde3f0;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), #ffd36f);
+            transition: width 0.25s ease-out;
+        }
+
+        .quiz-card {
+            background: var(--light);
+            border-radius: 18px;
+            padding: 18px 18px 20px;
+        }
+
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #6a7687;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--dark);
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            border-radius: 999px;
+            border: 2px solid transparent;
+            padding: 9px 14px;
+            text-align: left;
+            font-size: 0.98rem;
+            background: white;
+            color: var(--dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.08s ease-out, box-shadow 0.08s ease-out,
+                border-color 0.12s ease-out, background 0.12s ease-out,
+                color 0.12s ease-out;
+        }
+
+        .option-btn span.index {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: var(--light);
+            color: #5c6a80;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            border-color: rgba(30, 42, 56, 0.12);
+        }
+
+        .option-btn.correct {
+            border-color: var(--success);
+            background: #e5f6eb;
+            color: #145c2f;
+        }
+
+        .option-btn.correct span.index {
+            background: var(--success);
+            color: white;
+        }
+
+        .option-btn.wrong {
+            border-color: var(--error);
+            background: #fdecea;
+            color: #7c1f1c;
+        }
+
+        .option-btn.wrong span.index {
+            background: var(--error);
+            color: white;
+        }
+
+        .option-btn.disabled {
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        .explanation {
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: white;
+            font-size: 0.92rem;
+            color: #4b5768;
+            border-left: 3px solid var(--accent);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            gap: 10px;
+        }
+
+        .score-chip {
+            font-size: 0.9rem;
+            color: #4b5768;
+        }
+
+        .btn {
+            border-radius: 999px;
+            border: none;
+            padding: 9px 18px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #453009;
+            box-shadow: 0 5px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #6a7687;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Start screen & result screen */
+        .center-screen {
+            text-align: center;
+            padding: 30px 10px 10px;
+        }
+
+        .big-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .result-label {
+            font-size: 1rem;
+            color: #6a7687;
+            margin-bottom: 8px;
+        }
+
+        .result-text {
+            font-size: 1.1rem;
+            margin-bottom: 14px;
+            color: var(--dark);
+        }
+
+        @media (max-width: 640px) {
+            .app {
+                margin: 12px;
+                padding: 18px;
+                border-radius: 18px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .question-text {
+                font-size: 1.05rem;
+            }
+
+            .option-btn {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header>
+        <div>
+            <div class="title">Kviz – Rendgensko zračenje u industriji</div>
+            <div class="subtitle">
+                Proveri koliko dobro razumeš prezentaciju i studiju slučaja
+            </div>
+        </div>
+        <div class="badge">Studija slučaja: turbinska lopatica</div>
+    </header>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="startScreen" class="center-screen">
+        <p class="result-text">
+            Kviz pokriva tri metode:<br />
+            <strong>industrijsku radiografiju, CT tomografiju i XRD difrakciju</strong>,
+            kao i scenario sa turbinskom lopaticom.
+        </p>
+        <button id="startBtn" class="btn btn-primary">Počni kviz</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quizScreen" class="quiz-card hidden">
+        <div class="question-meta">
+            <div id="questionCounter">Pitanje 1 / 8</div>
+            <div id="topicTag">Tema: radiografija</div>
+        </div>
+        <div id="questionText" class="question-text">
+            Ovde ide tekst pitanja.
+        </div>
+        <div id="optionsContainer" class="options"></div>
+        <div id="explanationBox" class="explanation hidden"></div>
+
+        <div class="controls">
+            <div id="scoreChip" class="score-chip">Rezultat: 0 / 0</div>
+            <button id="nextBtn" class="btn btn-primary hidden">Sledeće pitanje</button>
+        </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="resultScreen" class="center-screen hidden">
+        <div class="result-label">Tvoj rezultat</div>
+        <div class="big-number" id="finalScore">0/0</div>
+        <div class="result-text" id="resultMessage">
+            Odlično urađen kviz!
+        </div>
+        <button id="retryBtn" class="btn btn-primary">Ponovi kviz</button>
+        <button id="reviewBtn" class="btn btn-ghost">Pregled pitanja</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            topic: "osnovno",
+            question:
+                "Zašto je rendgensko zračenje pogodno za ispitivanje industrijskih delova?",
+            options: [
+                "Jer prolazi kroz materijale i otkriva unutrašnju strukturu",
+                "Jer ne može da prođe kroz metal",
+                "Jer se koristi samo za zagrevanje delova",
+                "Jer je vidljivo golim okom"
+            ],
+            correctIndex: 0,
+            explanation:
+                "Rendgensko zračenje ima vrlo malu talasnu dužinu i veliku energiju, pa može da prolazi kroz materijale i otkriva skrivene strukture i defekte."
+        },
+        {
+            topic: "radiografija",
+            question:
+                "Šta je glavna karakteristika industrijske radiografije u odnosu na druge metode?",
+            options: [
+                "Daje 3D prikaz objekta",
+                "Daje 2D rendgensku sliku unutrašnjosti",
+                "Meri temperaturu materijala",
+                "Menja kristalnu strukturu materijala"
+            ],
+            correctIndex: 1,
+            explanation:
+                "Radiografija pravi 2D rendgenski snimak objekta i koristi se kao prvi, brz pregled koji otkriva postojanje pukotina, šupljina ili drugih nepravilnosti."
+        },
+        {
+            topic: "radiografija",
+            question:
+                "U studiji slučaja, radiografija turbinske lopatice je pokazala:",
+            options: [
+                "Da uopšte nema defekata",
+                "Da su pukotine samo na površini",
+                "Da postoje sumnjive zone koje ukazuju na pukotine",
+                "Da je uzrok defekta nepravilno hlađenje"
+            ],
+            correctIndex: 2,
+            explanation:
+                "Radiografija je potvrdila postojanje defekata, ali nije mogla precizno da pokaže njihov oblik i dubinu – zato se prelazi na CT tomografiju."
+        },
+        {
+            topic: "CT",
+            question:
+                "Koja je najveća prednost CT tomografije u industriji?",
+            options: [
+                "Daje 3D model unutrašnje strukture delova",
+                "Koristi se samo u medicini",
+                "Može da otkrije samo spoljašnje ogrebotine",
+                "Služi za merenje boje materijala"
+            ],
+            correctIndex: 0,
+            explanation:
+                "CT tomografija kombinuje veliki broj rendgenskih projekcija i rekonstruiše 3D model, pa se tačno vidi gde je pukotina i koliko je duboka."
+        },
+        {
+            topic: "CT",
+            question:
+                "Zašto se CT koristi u drugom koraku studije slučaja turbinske lopatice?",
+            options: [
+                "Da bi se promenila struktura materijala",
+                "Da bi se proverilo da li defekti imaju oblik i dubinu opasnu za rad",
+                "Da bi se povećala temperatura lopatice",
+                "Da bi se ispitala boja lopatice"
+            ],
+            correctIndex: 1,
+            explanation:
+                "CT omogućava inženjerima da vide tačan oblik i veličinu pukotine i da procene da li je bezbedno koristiti deo ili ne."
+        },
+        {
+            topic: "XRD",
+            question:
+                "Šta se ispituje XRD difrakcijom (difrakcija X-zraka)?",
+            options: [
+                "Samo površinske ogrebotine",
+                "Kristalna rešetka i raspored atoma u materijalu",
+                "Boja i sjaj metala",
+                "Električno kolo u uređaju"
+            ],
+            correctIndex: 1,
+            explanation:
+                "XRD difrakcija daje informacije o kristalnoj strukturi, fazama i naprezanjima u materijalu – zato se koristi da se otkrije uzrok defekta."
+        },
+        {
+            topic: "XRD",
+            question:
+                "Šta je XRD analiza otkrila u našoj studiji slučaja sa turbinskom lopaticom?",
+            options: [
+                "Da je materijal potpuno savršen",
+                "Da je problem samo u geometriji lopatice",
+                "Da postoje unutrašnja naprezanja zbog nepravilne termičke obrade",
+                "Da rendgensko zračenje ne prolazi kroz lopaticu"
+            ],
+            correctIndex: 2,
+            explanation:
+                "XRD je pokazao da je kristalna rešetka deformisana usled lošeg hlađenja / termičke obrade, što dovodi do pojave mikro-pukotina."
+        },
+        {
+            topic: "zaključak",
+            question:
+                "Koji zaključak najbolje sažima studiju slučaja?",
+            options: [
+                "Dovoljno je koristiti samo jednu rendgensku metodu",
+                "Kombinacija radiografije, CT-a i XRD-a daje potpunu sliku o defektu i njegovom uzroku",
+                "Defekte je najbolje otkrivati samo vizuelnim pregledom",
+                "Rendgenske metode nisu primenljive u industriji"
+            ],
+            correctIndex: 1,
+            explanation:
+                "Radiografija otkriva da defekt postoji, CT pokazuje njegov oblik i dimenzije, a XRD objašnjava zašto je nastao – tek zajedno daju potpunu dijagnozu problema."
+        }
+    ];
+
+    const startScreen = document.getElementById("startScreen");
+    const quizScreen = document.getElementById("quizScreen");
+    const resultScreen = document.getElementById("resultScreen");
+
+    const progressFill = document.getElementById("progressFill");
+    const questionCounter = document.getElementById("questionCounter");
+    const topicTag = document.getElementById("topicTag");
+    const questionText = document.getElementById("questionText");
+    const optionsContainer = document.getElementById("optionsContainer");
+    const explanationBox = document.getElementById("explanationBox");
+    const scoreChip = document.getElementById("scoreChip");
+    const nextBtn = document.getElementById("nextBtn");
+    const finalScore = document.getElementById("finalScore");
+    const resultMessage = document.getElementById("resultMessage");
+
+    const startBtn = document.getElementById("startBtn");
+    const retryBtn = document.getElementById("retryBtn");
+    const reviewBtn = document.getElementById("reviewBtn");
+
+    let currentIndex = 0;
+    let score = 0;
+    let answeredQuestions = 0;
+    let reviewMode = false;
+
+    function updateProgress() {
+        const percent = (currentIndex / questions.length) * 100;
+        progressFill.style.width = percent + "%";
+    }
+
+    function tagLabel(topic) {
+        switch (topic) {
+            case "osnovno": return "Tema: osnove rendgenskog zračenja";
+            case "radiografija": return "Tema: industrijska radiografija";
+            case "CT": return "Tema: CT tomografija";
+            case "XRD": return "Tema: XRD difrakcija";
+            case "zaključak": return "Tema: zaključak studije";
+            default: return "Tema";
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+
+        questionCounter.textContent =
+            "Pitanje " + (currentIndex + 1) + " / " + questions.length;
+        topicTag.textContent = tagLabel(q.topic);
+        questionText.textContent = q.question;
+        explanationBox.classList.add("hidden");
+        explanationBox.textContent = "";
+        nextBtn.classList.add("hidden");
+
+        optionsContainer.innerHTML = "";
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerHTML = `<span class="index">${String.fromCharCode(
+                65 + index
+            )}</span>${opt}`;
+            btn.addEventListener("click", () => handleAnswer(index));
+            optionsContainer.appendChild(btn);
+        });
+
+        scoreChip.textContent = `Rezultat: ${score} / ${answeredQuestions}`;
+        updateProgress();
+    }
+
+    function handleAnswer(selectedIndex) {
+        const q = questions[currentIndex];
+        const optionButtons = optionsContainer.querySelectorAll(".option-btn");
+
+        optionButtons.forEach((btn, index) => {
+            btn.classList.add("disabled");
+            if (index === q.correctIndex) {
+                btn.classList.add("correct");
+            }
+        });
+
+        if (selectedIndex !== q.correctIndex) {
+            optionButtons[selectedIndex].classList.add("wrong");
+        } else {
+            score++;
+        }
+
+        answeredQuestions++;
+        scoreChip.textContent = `Rezultat: ${score} / ${answeredQuestions}`;
+
+        explanationBox.textContent = q.explanation;
+        explanationBox.classList.remove("hidden");
+
+        nextBtn.classList.remove("hidden");
+    }
+
+    function showResult() {
+        quizScreen.classList.add("hidden");
+        resultScreen.classList.remove("hidden");
+
+        finalScore.textContent = `${score}/${questions.length}`;
+        const percent = (score / questions.length) * 100;
+
+        let msg = "";
+        if (percent === 100) {
+            msg = "Savršeno! Potpuno vladaš ovom prezentacijom. 👏";
+        } else if (percent >= 75) {
+            msg = "Odlično znanje! Još malo ponavljanja za maksimum. 💪";
+        } else if (percent >= 50) {
+            msg = "Solidno, ali probaj još jednom da učvrstiš gradivo. 🙂";
+        } else {
+            msg = "Nije strašno – kviz služi da učiš, probaj opet. 📚";
+        }
+        resultMessage.textContent = msg;
+
+        progressFill.style.width = "100%";
+    }
+
+    function startQuiz() {
+        startScreen.classList.add("hidden");
+        resultScreen.classList.add("hidden");
+        quizScreen.classList.remove("hidden");
+
+        currentIndex = 0;
+        score = 0;
+        answeredQuestions = 0;
+        reviewMode = false;
+
+        showQuestion();
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex >= questions.length) {
+            showResult();
+        } else {
+            showQuestion();
+        }
+    }
+
+    function reviewQuestions() {
+        reviewMode = true;
+        currentIndex = 0;
+        scoreChip.textContent = "Pregled pitanja (bez bodovanja)";
+        startScreen.classList.add("hidden");
+        resultScreen.classList.add("hidden");
+        quizScreen.classList.remove("hidden");
+        showQuestion();
+    }
+
+    startBtn.addEventListener("click", startQuiz);
+    nextBtn.addEventListener("click", nextQuestion);
+    retryBtn.addEventListener("click", startQuiz);
+    reviewBtn.addEventListener("click", reviewQuestions);
+</script>
+</body>
+</html>
