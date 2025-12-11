@@ -258,6 +258,40 @@
             color: var(--dark);
         }
 
+        /* Pregled pitanja lista */
+        .review-list {
+            margin-top: 18px;
+            text-align: left;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .review-item {
+            margin-bottom: 10px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: #f5f7fb;
+            font-size: 0.9rem;
+        }
+
+        .review-item.correct {
+            border-left: 3px solid var(--success);
+        }
+
+        .review-item.wrong {
+            border-left: 3px solid var(--error);
+        }
+
+        .review-item-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .review-item-detail {
+            color: #4b5768;
+        }
+
         @media (max-width: 640px) {
             .app {
                 margin: 12px;
@@ -333,6 +367,9 @@
         </div>
         <button id="retryBtn" class="btn btn-primary">Ponovi kviz</button>
         <button id="reviewBtn" class="btn btn-ghost">Pregled pitanja</button>
+
+        <!-- OVDE ĆE SE ISPISATI PREGLED PITANJA -->
+        <div id="reviewList" class="review-list hidden"></div>
     </div>
 </div>
 
@@ -466,6 +503,7 @@
     const nextBtn = document.getElementById("nextBtn");
     const finalScore = document.getElementById("finalScore");
     const resultMessage = document.getElementById("resultMessage");
+    const reviewList = document.getElementById("reviewList");
 
     const startBtn = document.getElementById("startBtn");
     const retryBtn = document.getElementById("retryBtn");
@@ -475,6 +513,7 @@
     let score = 0;
     let answeredQuestions = 0;
     let reviewMode = false;
+    let userAnswers = []; // ovde ćemo čuvati sve odgovore
 
     function updateProgress() {
         const percent = (currentIndex / questions.length) * 100;
@@ -529,11 +568,19 @@
             }
         });
 
-        if (selectedIndex !== q.correctIndex) {
+        const isCorrect = selectedIndex === q.correctIndex;
+
+        if (!isCorrect) {
             optionButtons[selectedIndex].classList.add("wrong");
         } else {
             score++;
         }
+
+        // Sačuvaj odgovor korisnika
+        userAnswers[currentIndex] = {
+            selected: selectedIndex,
+            correct: isCorrect
+        };
 
         answeredQuestions++;
         scoreChip.textContent = `Rezultat: ${score} / ${answeredQuestions}`;
@@ -547,6 +594,8 @@
     function showResult() {
         quizScreen.classList.add("hidden");
         resultScreen.classList.remove("hidden");
+        reviewList.classList.add("hidden");
+        reviewList.innerHTML = "";
 
         finalScore.textContent = `${score}/${questions.length}`;
         const percent = (score / questions.length) * 100;
@@ -575,6 +624,7 @@
         score = 0;
         answeredQuestions = 0;
         reviewMode = false;
+        userAnswers = [];
 
         showQuestion();
     }
@@ -589,17 +639,45 @@
     }
 
     function reviewQuestions() {
-    reviewMode = true;
-    currentIndex = 0;
-    score = 0;
-    answeredQuestions = 0;
+        // Prikaži pregled (lista pitanja + tačno/netacno)
+        reviewMode = true;
+        reviewList.innerHTML = "";
 
-    scoreChip.textContent = "Pregled pitanja (bez bodovanja)";
-    startScreen.classList.add("hidden");
-    resultScreen.classList.add("hidden");
-    quizScreen.classList.remove("hidden");
-    showQuestion();
-}
+        questions.forEach((q, idx) => {
+            const ans = userAnswers[idx];
+            const div = document.createElement("div");
+            const status = ans && ans.correct ? "Tačno" : "Netačno";
+
+            div.className = "review-item " + (ans && ans.correct ? "correct" : "wrong");
+
+            const selectedText = ans
+                ? q.options[ans.selected]
+                : "Nije odgovoreno";
+
+            const correctText = q.options[q.correctIndex];
+
+            div.innerHTML = `
+                <div class="review-item-title">
+                    Pitanje ${idx + 1}: ${status}
+                </div>
+                <div class="review-item-detail">
+                    ${q.question}
+                </div>
+                <div class="review-item-detail">
+                    <strong>Tvoj odgovor:</strong> ${selectedText}
+                </div>
+                <div class="review-item-detail">
+                    <strong>Tačan odgovor:</strong> ${correctText}
+                </div>
+            `;
+
+            reviewList.appendChild(div);
+        });
+
+        reviewList.classList.remove("hidden");
+        // Skrol do pregleda
+        resultScreen.scrollIntoView({ behavior: "smooth" });
+    }
 
     startBtn.addEventListener("click", startQuiz);
     nextBtn.addEventListener("click", nextQuestion);
