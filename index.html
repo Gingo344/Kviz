@@ -258,7 +258,6 @@
             color: var(--dark);
         }
 
-        /* Pregled pitanja lista */
         .review-list {
             margin-top: 18px;
             text-align: left;
@@ -329,8 +328,6 @@
     <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
     </div>
-
-    <!-- START SCREEN -->
     <div id="startScreen" class="center-screen">
         <p class="result-text">
             Kviz pokriva tri metode:<br />
@@ -339,8 +336,6 @@
         </p>
         <button id="startBtn" class="btn btn-primary">Počni kviz</button>
     </div>
-
-    <!-- QUIZ SCREEN -->
     <div id="quizScreen" class="quiz-card hidden">
         <div class="question-meta">
             <div id="questionCounter">Pitanje 1 / 8</div>
@@ -357,8 +352,6 @@
             <button id="nextBtn" class="btn btn-primary hidden">Sledeće pitanje</button>
         </div>
     </div>
-
-    <!-- RESULT SCREEN -->
     <div id="resultScreen" class="center-screen hidden">
         <div class="result-label">Tvoj rezultat</div>
         <div class="big-number" id="finalScore">0/0</div>
@@ -576,7 +569,6 @@
             score++;
         }
 
-        // Sačuvaj odgovor korisnika
         userAnswers[currentIndex] = {
             selected: selectedIndex,
             correct: isCorrect
@@ -639,7 +631,6 @@
     }
 
     function reviewQuestions() {
-        // Prikaži pregled (lista pitanja + tačno/netacno)
         reviewMode = true;
         reviewList.innerHTML = "";
 
@@ -675,7 +666,6 @@
         });
 
         reviewList.classList.remove("hidden");
-        // Skrol do pregleda
         resultScreen.scrollIntoView({ behavior: "smooth" });
     }
 
