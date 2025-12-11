@@ -589,14 +589,17 @@
     }
 
     function reviewQuestions() {
-        reviewMode = true;
-        currentIndex = 0;
-        scoreChip.textContent = "Pregled pitanja (bez bodovanja)";
-        startScreen.classList.add("hidden");
-        resultScreen.classList.add("hidden");
-        quizScreen.classList.remove("hidden");
-        showQuestion();
-    }
+    reviewMode = true;
+    currentIndex = 0;
+    score = 0;
+    answeredQuestions = 0;
+
+    scoreChip.textContent = "Pregled pitanja (bez bodovanja)";
+    startScreen.classList.add("hidden");
+    resultScreen.classList.add("hidden");
+    quizScreen.classList.remove("hidden");
+    showQuestion();
+}
 
     startBtn.addEventListener("click", startQuiz);
     nextBtn.addEventListener("click", nextQuestion);
